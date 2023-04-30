@@ -2,6 +2,9 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog, messagebox
+new = []
+old = []
+dir_path = ''
 
 def addOffsetAndLeadingZero(Epnum, offset):
     Epnum = int(Epnum) + offset
@@ -9,7 +12,25 @@ def addOffsetAndLeadingZero(Epnum, offset):
         return '0' + str(Epnum)
     return str(Epnum)
 
+def updeteFileNemes():
+    global new
+    global old
+    global dir_path
+
+    unique_new = list(set(new))
+    if len(unique_new) == len(new):
+        for i in range(len(old)):
+            os.rename(os.path.join(dir_path, old[i]), os.path.join(dir_path, new[i]))
+        tk.messagebox.showinfo(title='Rename Files', message='File names have been updated.')
+    else:
+        tk.messagebox.showinfo(title='Rename Files', message='There are similar file names, please correct search pattern')
+
 def rename_files():
+    global new
+    global old
+    global dir_path
+    new = []
+    old = []
     # Get the directory path, search pattern, and replacement string from the user
     if path_input.get() == '':
         dir_path = os.getcwd()
@@ -36,9 +57,11 @@ def rename_files():
 
     # Get a list of all the files in the directory
     files = os.listdir(dir_path)
-    f=''
     # Loop through all the files and rename them if they match the pattern
+
     for file in files:
+        if 'AutoFilesRename' in file:
+            continue
         x = re.search(r''+ rgx + pattern_str, file)
         if x != None:
             Epnum = x.group()
@@ -48,12 +71,18 @@ def rename_files():
             ext = sp.pop()
             Epnum = addOffsetAndLeadingZero(Epnum, offset)
             new_file_name = replace_str + Epnum + "."+ext
-            # Rename the file
-            os.rename(os.path.join(dir_path, file), os.path.join(dir_path, new_file_name))
-            f += new_file_name+'\n'
-    # Show a message box indicating that the files have been renamed
-    tk.messagebox.showinfo(title='Rename Files', message='File names have been updated.')
-    tk.messagebox.showinfo(title='Rename Files', message= f )
+            old.append(file)
+            new.append(new_file_name)
+    for i in range(len(old)):
+
+        old_label = tk.Label(root,width=50, text=old[i] ,bd=1, relief="sunken")
+        old_label.grid(row=8+i, column=0, padx=5, pady=5, sticky=tk.W)
+
+        new_label = tk.Label(root,width=50, text=new[i],bd=1, relief= "sunken")
+        new_label.grid(row=8+i, column=1, padx=5, pady=5, sticky=tk.W)
+
+    run_button = tk.Button(root, text='Updete Files Names', command=updeteFileNemes)
+    run_button.grid(row=8+i+1, column=1, padx=5, pady=5, sticky=tk.E)
 
 # Create a Tkinter window
 root = tk.Tk()
@@ -94,9 +123,11 @@ season_input.grid(row=4, column=1, padx=5, pady=5)
 
 
 
-# Create the "Run" button
-run_button = tk.Button(root, text='Run', command=rename_files)
-run_button.grid(row=6, column=1, padx=5, pady=5, sticky=tk.E)
+# Create the "Preview" button
+preview_button = tk.Button(root, text='Preview', command=rename_files)
+preview_button.grid(row=6, column=1, padx=5, pady=5, sticky=tk.E)
+
+
 
 # Start the Tkinter event loop
 root.mainloop()
