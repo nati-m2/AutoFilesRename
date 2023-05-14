@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 new = []
 old = []
+exc = []
 dir_path = ''
 
 def addOffsetAndLeadingZero(Epnum, offset):
@@ -25,9 +26,19 @@ def updeteFileNemes():
     else:
         tk.messagebox.showinfo(title='Rename Files', message='There are similar file names, please correct search pattern')
 
+def delete(i):
+    global exc
+    global old
+    global new
+    exc.append(old[i])
+    old.remove(old[i])
+    new.remove(new[i])
+    print(i)
+
 def rename_files():
     global new
     global old
+    global exc
     global dir_path
     new = []
     old = []
@@ -62,6 +73,8 @@ def rename_files():
     for file in files:
         if 'AutoFilesRename' in file:
             continue
+        if file in exc:
+            continue
         x = re.search(r''+ rgx + pattern_str, file)
         if x != None:
             Epnum = x.group()
@@ -73,13 +86,16 @@ def rename_files():
             new_file_name = replace_str + Epnum + "."+ext
             old.append(file)
             new.append(new_file_name)
-    for i in range(len(old)):
 
-        old_label = tk.Label(root,width=50, text=old[i] ,bd=1, relief="sunken")
-        old_label.grid(row=8+i, column=0, padx=5, pady=5, sticky=tk.W)
+    # e = old[0].replace(ext, '')
+    # entry_text.set(e)
+    for i in range(len(old)-len(exc)):
 
-        new_label = tk.Label(root,width=50, text=new[i],bd=1, relief= "sunken")
-        new_label.grid(row=8+i, column=1, padx=5, pady=5, sticky=tk.W)
+        old_label = tk.Label(root,width=len(old[i])+2, text=old[i] ,bd=1, relief="sunken")
+        old_label.grid(row=8+i, column=0, padx=1, pady=1, sticky=tk.W)
+
+        new_label = tk.Label(root,width=len(new[i])+2, text=new[i],bd=1, relief= "sunken")
+        new_label.grid(row=8+i, column=1, padx=1, pady=1, sticky=tk.W)
 
     run_button = tk.Button(root, text='Updete Files Names', command=updeteFileNemes)
     run_button.grid(row=8+i+1, column=1, padx=5, pady=5, sticky=tk.E)
@@ -102,9 +118,11 @@ pattern_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
 pattern_input = tk.Entry(root, width=50)
 pattern_input.grid(row=1, column=1, padx=5, pady=5)
 
+entry_text = tk.StringVar()
 replace_label = tk.Label(root, text='Replace With:')
 replace_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
-replace_input = tk.Entry(root, width=50)
+replace_input = tk.Entry(root, width=50, textvariable=entry_text )
+entry_text.set("")
 replace_input.grid(row=2, column=1, padx=5, pady=5)
 
 offset_label = tk.Label(root, text='offset (default = 0):')
@@ -115,6 +133,10 @@ offset_input.grid(row=3, column=1, padx=5, pady=5)
 episodeCheckbox_var = tk.IntVar()
 episodeCheckbox = tk.Checkbutton(root, text='Add Episode ', variable=episodeCheckbox_var)
 episodeCheckbox.grid(row=4, column=2, padx=5, pady=5, sticky=tk.E)
+
+SeasonDirCheckbox_var = tk.IntVar()
+SeasonDirCheckbox = tk.Checkbutton(root, text='Season dir', variable=SeasonDirCheckbox_var)
+SeasonDirCheckbox.grid(row=4, column=3, padx=5, pady=5, sticky=tk.E)
 
 season_label = tk.Label(root, text='Season  (default = No Season):')
 season_label.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
